@@ -9,6 +9,7 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 const Conversation = require(".//models/Conversation");
+
 const User = require("./models/User");
 const io = require("socket.io")(server, {
   cors: {
@@ -18,7 +19,7 @@ const io = require("socket.io")(server, {
 });
 
 const fileUpload = require("express-fileupload");
-const { send } = require("process");
+
 dotenv.config({ path: "./.env" });
 const db = process.env.DATABASE_LINK;
 
@@ -43,9 +44,12 @@ app.use(
 let arr = [];
 io.on("connection", socket => {
   let { user } = socket.handshake.query;
-  // console.log(user);
 
   joinUserToServer(user, socket);
+
+  socket.on("friendsRequest", data => {
+    console.log(data);
+  });
 
   socket.on("active", data => {
     findActiveFriends(data);
@@ -65,14 +69,11 @@ io.on("connection", socket => {
 });
 
 app.use(fileUpload({ createParentPath: true }));
-
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRouter);
 app.use("/messenger", messengerRouter);
-
 app.use(express.static("uploads"));
 app.use("/images", express.static("uploads"));
 
@@ -87,8 +88,6 @@ module.exports.app;
 
 const joinUserToServer = async (user, socket) => {
   !arr.find(e => e.id === user) && arr.push({ id: user, socketId: socket.id });
-  // console.log("user has joined to the server");
-  // console.log(arr);
 };
 
 const sendMessageToUser = async message => {
@@ -121,19 +120,17 @@ const sendMessageToUser = async message => {
 };
 
 const disconnectUser = async socket => {
-  console.log("User has logged out");
-
   const user = arr.find(e => e.socketId === socket.id);
-  arr = arr.filter(e => e.id !== user.id);
+
+  user && (arr = arr.filter(e => e.id !== user.id));
 };
 
 const findActiveFriends = async data => {
   const user = await User.findOne({ _id: data.id });
   const friends = await user.friends;
   const active = arr.filter(e => friends.includes(e.id));
-  // console.log(active);
   const sendTo = arr.find(e => e.id === data.id);
-  // console.log(sendTo);
+
   io.to(sendTo.socketId).emit("active", active);
 };
 
@@ -143,8 +140,6 @@ const findConversation = async data => {
   });
 
   let user = arr.find(e => e.id === data.id);
-  // console.log(user);
-  // console.log("szukam");
 
   if (!conversation) {
     io.to(user.socketId).emit("findChat");
