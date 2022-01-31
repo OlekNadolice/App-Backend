@@ -1,15 +1,16 @@
 const express = require("express");
 const User = require("../models/User");
-
+const passport = require("../passportSetup");
 const { body, validationResult, check } = require("express-validator");
 const authRouter = express.Router();
-
+const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const authController = require("../controllers/AuthController");
 const authMiddleware = require("../middlewares/AuthMiddleware");
 const settingsController = require("../controllers/SettingsController");
 const RequestController = require("../controllers/RequestController");
 const { set } = require("mongoose");
+const { urlencoded } = require("express");
 
 authRouter.post(
   "/register",
@@ -41,6 +42,27 @@ authRouter.post(
 authRouter.post("/login", authController.loginHandler);
 
 authRouter.post("/verify", authMiddleware.veryfiedToken, authController.veryfiedUser);
+
+/** OPEN AUTHENTICATION WITH google **/
+authRouter.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+authRouter.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    failureRedirect: "http://localhost:3000/",
+    failureMessage: true,
+  }),
+  function (req, res) {
+    let { _id: id, name, profileImage } = req.user;
+    const token = jwt.sign({ id: req.user._id }, process.env.JWTPASSWORD);
+    profileImage = btoa(profileImage);
+
+    res.redirect(`http://localhost:3000/veryfied/${token}/${id}/${name}/${profileImage}`);
+  }
+);
 
 authRouter.post(
   "/sendRequest",
@@ -130,7 +152,8 @@ authRouter.get(
         .select("name")
         .select("city")
         .select("profileImage")
-        .select("friends");
+        .select("friends")
+        .select("friendsRequests");
     }
 
     if (req.query.page) {
