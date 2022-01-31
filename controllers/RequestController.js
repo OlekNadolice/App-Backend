@@ -2,8 +2,6 @@ const User = require("../models/User");
 
 module.exports.sendFriendRequest = async (req, res) => {
   try {
-    console.log(req.id);
-    console.log(req.body);
     const user = await User.findOneAndUpdate(
       { _id: req.body.targetID },
       { $push: { friendsRequests: req.id } }
