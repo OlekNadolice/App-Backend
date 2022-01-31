@@ -16,7 +16,7 @@ module.exports.veryfiedToken = async (req, res, next) => {
 
 module.exports.checkToken = async (req, res, next) => {
   try {
-    await jsontoken.verify(req.token, "xd", (err, data) => {
+    await jsontoken.verify(req.token, process.env.JWTPASSWORD, (err, data) => {
       if (err) {
         res.status(403).send("Forbidden ");
       } else {

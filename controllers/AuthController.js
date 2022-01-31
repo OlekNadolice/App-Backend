@@ -8,9 +8,9 @@ module.exports.loginHandler = async (req, res) => {
 
   if (user) {
     const password = await bcrypt.compare(req.body.password, user.password);
-    console.log(process.env.jw);
+
     if (password) {
-      const token = jsontoken.sign({ id: user.id }, "xd");
+      const token = jsontoken.sign({ id: user.id }, process.env.JWTPASSWORD);
       const data = { name: user.name, profileImage: user.profileImage, id: user._id };
       res.json({ status: 201, data, token });
     } else {
@@ -22,13 +22,21 @@ module.exports.loginHandler = async (req, res) => {
 };
 
 module.exports.veryfiedUser = async (req, res) => {
-  jsontoken.verify(req.token, "xd", (err, authData) => {
+  jsontoken.verify(req.token, process.env.JWTPASSWORD, (err, authData) => {
     if (err) {
       res.status(403).send("doesnt work");
     } else if (authData) {
       res.json({ status: 201, message: "Logged In" });
     }
   });
+};
+
+module.exports.facebookOauth = async (req, res) => {
+  try {
+    res.send("Wszystko dziala mozna robic konto");
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports.registerUser = async (req, res) => {
