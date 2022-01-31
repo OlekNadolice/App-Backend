@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "This field is required"],
+
     min: 6,
   },
   city: {
@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
 
   born: {
     type: Date,
+  },
+
+  googleId: {
+    type: String,
   },
 
   height: {
