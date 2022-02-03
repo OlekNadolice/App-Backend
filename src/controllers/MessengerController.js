@@ -1,14 +1,6 @@
-const User = require("../models/User");
-const Conversation = require("../models/Conversation");
+const messengerService = require("../services/messengerService");
 
 module.exports.getFriends = async (req, res) => {
-  try {
-    const users = await User.findOne({ _id: req.id })
-      .select("friends")
-      .populate("friends", "name profileImage");
-
-    res.json({ data: users, status: 200 });
-  } catch (err) {
-    res.send(err);
-  }
+  const data = await messengerService.getFriends(req);
+  res.json(data);
 };
