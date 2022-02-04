@@ -1,39 +1,30 @@
 const express = require("express");
 
 const dotenv = require("dotenv");
-const mongoose = require("mongoose");
+
 const authRouter = require("./routes/Auth");
 const messengerRouter = require("./routes/Messenger");
+const userRouter = require("./routes/Users");
 const cors = require("cors");
 const app = express();
 const http = require("http");
+const db = require("./db/dbConfig");
 const server = http.createServer(app);
 const Conversation = require("./models/Conversation");
-
+dotenv.config({ path: "../.env" });
 const User = require("./models/User");
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_ORIGIN,
     methods: "*",
   },
 });
 
 const fileUpload = require("express-fileupload");
 
-dotenv.config({ path: "../.env" });
-const db = process.env.DATABASE_LINK;
-
-mongoose.connect(db, error => {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Connection completed");
-  }
-});
-
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_ORIGIN,
     allowedHeaders: "* ",
     methods: "*",
     credentials: true,
@@ -73,6 +64,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/auth", authRouter);
 app.use("/messenger", messengerRouter);
+app.use("/users", userRouter);
 app.use(express.static("src/uploads"));
 app.use("/images", express.static("src/uploads"));
 
