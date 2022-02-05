@@ -1,35 +1,19 @@
-const express = require("express");
-
 const dotenv = require("dotenv");
-
-const authRouter = require("./routes/Auth");
-const messengerRouter = require("./routes/Messenger");
-const userRouter = require("./routes/Users");
+const app = require("./appConfig");
 const cors = require("cors");
-const app = express();
 const http = require("http");
 const db = require("./db/dbConfig");
 const server = http.createServer(app);
 const Conversation = require("./models/Conversation");
-dotenv.config({ path: "../.env" });
 const User = require("./models/User");
+dotenv.config({ path: "../.env" });
+
 const io = require("socket.io")(server, {
   cors: {
     origin: process.env.CLIENT_ORIGIN,
     methods: "*",
   },
 });
-
-const fileUpload = require("express-fileupload");
-
-app.use(
-  cors({
-    origin: process.env.CLIENT_ORIGIN,
-    allowedHeaders: "* ",
-    methods: "*",
-    credentials: true,
-  })
-);
 
 let arr = [];
 io.on("connection", socket => {
@@ -58,22 +42,13 @@ io.on("connection", socket => {
   });
 });
 
-app.use(fileUpload({ createParentPath: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use("/auth", authRouter);
-app.use("/messenger", messengerRouter);
-app.use("/users", userRouter);
-app.use(express.static("src/uploads"));
-app.use("/images", express.static("src/uploads"));
-
 server.listen(8000, () => {
   console.log("Server is listening on port 8000");
 });
 
 module.exports.server;
-module.exports.app;
+// module.exports.app;
+module.exports.io;
 
 // ** Functions for SOCKET IO
 
