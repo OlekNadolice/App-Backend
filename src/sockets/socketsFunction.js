@@ -28,12 +28,15 @@ module.exports.sendMessageToUser = async (message, io) => {
   }
 
   const user = onlineUsers.find(e => e.id === target);
-  let secondUser = onlineUsers.find(e => e.id === id);
+  // let secondUser = onlineUsers.find(e => e.id === id);
+  const sender = await User.findOne({ _id: id });
 
   user &&
     io.to(user.socketId).emit("message", {
       message: message.message,
       author: id,
+      created: message.created,
+      senderName: sender.name,
     });
 };
 
@@ -48,15 +51,16 @@ module.exports.findActiveFriends = async (data, io) => {
   const active = onlineUsers.filter(e => friends.includes(e.id));
   const sendTo = onlineUsers.find(e => e.id === data.id);
 
-  io.to(sendTo.socketId).emit("active", active);
+  sendTo && io.to(sendTo.socketId).emit("active", active);
 };
 
 module.exports.sendFriendRequest = async (data, io) => {
   const { id, targetID } = data;
-  await User.findOneAndUpdate({ _id: targetID }, { $push: { friendsRequests: id } });
+
   const requestReciver = onlineUsers.find(e => e.id === targetID);
   const sender = await User.findOne({ _id: id });
-  requestReciver && io.to(requestReciver).emit("friendRequest", sender._id);
+
+  requestReciver && io.to(requestReciver.socketId).emit("friendsRequest", sender.name);
 };
 
 module.exports.findConversation = async (data, io) => {
