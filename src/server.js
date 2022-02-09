@@ -1,10 +1,10 @@
 const dotenv = require("dotenv");
 const app = require("./appConfig");
-// const cors = require("cors");
+
 const http = require("http");
 const db = require("./db/dbConfig");
 const server = http.createServer(app);
-
+const port = process.env.PORT || 8000;
 dotenv.config({ path: "../.env" });
 const socketsFunctions = require("./sockets/socketsFunction");
 
@@ -41,8 +41,8 @@ io.on("connection", socket => {
   });
 });
 
-server.listen(8000, () => {
-  console.log("Server is listening on port 8000");
+server.listen(port, () => {
+  console.log(`Server is listening on port ${port}`);
 });
 
 module.exports.server;
