@@ -5,7 +5,9 @@ const User = require("../models/User");
 const { validationResult } = require("express-validator");
 
 module.exports.loginUserToApplication = async req => {
-  const user = await User.findOne({ email: req.body.email });
+  const user = await User.findOne({
+    email: { $regex: new RegExp(`^${req.body.email}$`, "i") },
+  });
   if (user) {
     const password = await bcrypt.compare(req.body.password, user.password);
 
