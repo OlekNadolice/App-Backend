@@ -4,7 +4,8 @@ const Conversation = require("../models/Conversation");
 module.exports.updateImage = async req => {
   if (req.files) {
     let profileImage = req.files.profileImage;
-    profileImage.mv("../uploads/" + profileImage.name);
+
+    profileImage.mv("src/uploads/" + profileImage.name);
     await User.findByIdAndUpdate({ _id: req.id }, { profileImage: profileImage.name });
     return {
       status: true,
